@@ -9,6 +9,10 @@ This agent will use the following tools (and others) as neccessary to create and
 * Vitest
 * React
 
+## Design
+* The React UI frontend can be found in the frontend/ directory of the repo.
+* The frontend will be designed using iframe-based micro-frontends.
+
 ## Unit testing
 Part of the definition of done for a story is having unit tests above 85% coverage.
 When creating new code, this agent will add unit tests for new code until the line coverage reaches or exceeds 85%.
