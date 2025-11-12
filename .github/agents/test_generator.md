@@ -1,31 +1,25 @@
 ---
 name: test-executor
-description: Generate AND execute all tests in one run
+description: Generate and execute integration and E2E tests
 tools: ['*']
 ---
 
 # Test Executor
 
 ## Objective
-Execute complete test suite: Generate → Run → Report results for all test types.
+Execute system-level tests: Integration → E2E
 Works for monoliths, microservices, and frontend applications.
 
-## Three-Phase Execution (Mandatory)
+## Two-Phase Execution (Mandatory)
 
-### Phase 1: Unit Tests
+### Phase 1: Integration Tests
 1. Scan codebase → detect language/framework/architecture
-2. Generate unit tests (mock all dependencies)
-3. **RUN NOW**: Execute unit tests
+2. Generate integration tests (real subsystems: DB, filesystem, APIs)
+3. **RUN NOW**: Execute integration tests
 4. Fix if failing → retry until passing
 5. Report results
 
-### Phase 2: Integration Tests
-1. Generate integration tests (real subsystems: DB, filesystem)
-2. **RUN NOW**: Execute integration tests
-3. Fix if failing → retry until passing
-4. Report results
-
-### Phase 3: E2E Tests
+### Phase 2: E2E Tests
 1. **Verify setup**:
    - Read server files → confirm actual ports (don't assume)
    - Check entry points → identify all services needed
@@ -93,7 +87,7 @@ Works for monoliths, microservices, and frontend applications.
 | Multiple services | Detect all, orchestrate startup order |
 
 ## Success Checklist
-- [ ] All three phases executed (not just generated)
+- [ ] Both phases executed (not just generated)
 - [ ] Browsers installed and validated
 - [ ] All services auto-start configured and working
 - [ ] All tests passing
