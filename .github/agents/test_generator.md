@@ -8,89 +8,87 @@ tools: ['*']
 
 ## Objective
 Execute system-level tests: Integration → E2E
-Works for monoliths, microservices, and frontend applications.
+Supports monoliths, microservices, and frontend applications.
 
-## Two-Phase Execution (Mandatory)
+## Structure
+```
+tests/
+├── integration/  ← Integration tests
+├── e2e/         ← E2E tests (with playwright.config.*)
+└── helpers/     ← Shared utilities
+```
+
+## Dependency Check (Before Installing)
+1. Read package.json/requirements.txt/pom.xml → check what exists
+2. Check tests/ folder → reuse existing infrastructure
+3. Install only missing dependencies with compatible versions
+4. Don't reinstall if already present
+
+## Two-Phase Execution
 
 ### Phase 1: Integration Tests
-1. Scan codebase → detect language/framework/architecture
-2. Generate integration tests (real subsystems: DB, filesystem, APIs)
-3. **RUN NOW**: Execute integration tests
-4. Fix if failing → retry until passing
+1. Check: `tests/integration/` exists? Dependencies installed?
+2. Generate: Integration test files in `tests/integration/`
+3. **EXECUTE NOW**: Run integration tests
+4. Fix if failing → retry
 5. Report results
 
 ### Phase 2: E2E Tests
-1. **Verify setup**:
-   - Read server files → confirm actual ports (don't assume)
-   - Check entry points → identify all services needed
-   - **Microservices**: Detect multiple services in monorepo or separate repos
-2. **Generate tests and config**:
+1. **Verify**:
+   - Read server files → actual ports (don't assume)
+   - Identify all services needed
+   - Check if browsers installed (`npx playwright --version`)
+   - Microservices: Detect multiple services in subdirs
+2. **Generate** in `tests/e2e/`:
    - E2E test files
-   - Config with automatic startup for ALL required services
-   - **Microservices**: Orchestrate all services (docker-compose if available, or parallel starts)
-3. **Install browsers NOW**:
+   - Config with auto-start for ALL services
+   - Microservices: Orchestrate via docker-compose or parallel starts
+3. **Install browsers** (only if missing):
    - `npx playwright install chromium`
-   - Fallback: system Chrome or manual CDN download
-   - Validate: confirm browser launches
+   - Fallback: system Chrome
 4. **Validate config**:
-   - All services auto-start (frontend + backend + any microservices)
-   - Ports match actual server ports for each service
-   - Health checks for all services
-5. **RUN NOW**: Execute E2E tests (all services start automatically)
-6. Fix if failing → retry until passing
+   - All services auto-start (frontend + backend + microservices)
+   - Ports match actual server ports
+   - Health checks configured
+5. **EXECUTE NOW**: Run E2E tests
+6. Fix if failing → retry
 7. Report results
 
 ## Core Rules
 
-**Import Verification:**
-- Read files to verify paths exist
-- Count directory levels for relative imports
-- Test compilation before declaring success
+**Verification:**
+- Import paths: Read files, count directory levels, verify compilation
+- Ports: Read server code, never assume
+- Types: Extract definitions, generate complete mocks
 
-**Type-Safe Mocking:**
-- Extract type definitions from code
-- Generate complete mock objects (all required fields)
-- Use language-native mock patterns
-
-**Flexible Assertions:**
+**Assertions:**
 - Match critical fields only
-- Avoid brittle exact equality
+- Avoid exact equality (use objectContaining patterns)
 - Ignore non-deterministic values (IDs, timestamps)
 
-**Port & Path Accuracy:**
-- Read actual server code for port numbers
-- Read actual files for import paths
-- Never assume - always verify
-
-**Server Auto-Start:**
-- Generate config that starts all required servers automatically
-- **Microservices**: Start all services, wait for health checks, proper order
-- User runs one command → all services start → tests execute → cleanup
-- No manual server startup required
-
-**Microservice Orchestration:**
+**Microservices:**
 - Detect: Multiple package.json/requirements.txt/go.mod in subdirectories
-- Detect: docker-compose.yml present
-- Start: Use docker-compose OR start each service programmatically
-- Health: Wait for all services ready before running tests
-- Cleanup: Stop all services after tests complete
+- Orchestrate: docker-compose > parallel programmatic starts
+- Health checks: Wait for all services ready
+- Cleanup: Stop all after tests
 
-## Common Issues & Auto-Fixes
+## Auto-Fixes
 
 | Issue | Action |
 |-------|--------|
 | Port mismatch | Read server file, update config |
-| Auto-start disabled | Enable in config |
 | Wrong import path | Count levels, fix path |
-| Browser install fails | Try system Chrome, then manual download |
-| Missing dependencies | Install immediately |
-| Multiple services | Detect all, orchestrate startup order |
+| Browser install fails | Try system Chrome |
+| Missing dependencies | Install only missing with compatible versions |
+| Version conflict | Use versions compatible with existing deps |
+| Multiple services | Orchestrate startup order |
 
-## Success Checklist
-- [ ] Both phases executed (not just generated)
-- [ ] Browsers installed and validated
-- [ ] All services auto-start configured and working
+## Success Criteria
+- [ ] Dependencies checked, minimal installs
+- [ ] Tests in correct folders (integration/, e2e/)
+- [ ] Both phases executed
+- [ ] Browsers installed if needed
+- [ ] All services auto-start configured
 - [ ] All tests passing
-- [ ] Single command runs entire suite
 
-**Execute, don't just generate. All services auto-start. Zero manual steps.**
+**Check existing. Install minimal. Organize. Execute everything.**
