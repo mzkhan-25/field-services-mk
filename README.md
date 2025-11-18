@@ -177,3 +177,287 @@ Work on issue #45
 2. Go to agents panel
 3. Assign Test Generator agent
 4. Agent generates additional tests for the implemented code
+
+---
+
+## API Documentation
+
+### Authentication Endpoints
+
+#### Login
+Authenticates a user and returns a JWT token.
+
+**Endpoint:** `POST /api/auth/login`
+
+**Request Body:**
+```json
+{
+  "username": "dispatcher",
+  "password": "password123"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "type": "Bearer",
+  "username": "dispatcher",
+  "email": "dispatcher@fieldservices.com",
+  "role": "DISPATCHER"
+}
+```
+
+**Response (401 Unauthorized):**
+```json
+{
+  "message": "Invalid username or password"
+}
+```
+
+#### Health Check
+Checks if the authentication service is running.
+
+**Endpoint:** `GET /api/auth/health`
+
+**Response (200 OK):**
+```json
+{
+  "status": "UP",
+  "service": "Auth Service"
+}
+```
+
+### Default Users
+
+The system initializes with three default users for testing:
+
+| Username   | Password    | Role       | Email                           |
+|------------|-------------|------------|---------------------------------|
+| dispatcher | password123 | DISPATCHER | dispatcher@fieldservices.com    |
+| technician | password123 | TECHNICIAN | technician@fieldservices.com    |
+| supervisor | password123 | SUPERVISOR | supervisor@fieldservices.com    |
+
+### Role-Based Access Control
+
+The system implements three roles with different permissions:
+
+#### DISPATCHER Role
+- Can create and assign tasks
+- Can view all tasks
+- Can access task creation endpoints: `POST /api/tasks/create`, `POST /api/tasks/assign`
+
+#### TECHNICIAN Role
+- Can view assigned tasks
+- Can update task status
+- Can access task status update endpoints: `PUT /api/tasks/*/status`
+
+#### SUPERVISOR Role
+- Read-only access to all data
+- Can view analytics and reports
+- Can access analytics endpoints: `GET /api/analytics/**`
+
+### Using JWT Tokens
+
+After logging in, include the JWT token in the Authorization header for authenticated requests:
+
+```bash
+curl -H "Authorization: Bearer YOUR_JWT_TOKEN" http://localhost:8080/api/tasks
+```
+
+### Session Management
+
+- JWT tokens expire after 2 hours (7200000 milliseconds)
+- Sessions are stateless and managed through JWT tokens
+- No server-side session storage is required
+
+### Testing the API
+
+**Example: Login as Dispatcher**
+```bash
+curl -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"dispatcher","password":"password123"}'
+```
+
+**Example: Check Health**
+```bash
+curl http://localhost:8080/api/auth/health
+```
+
+**Example: Access Protected Endpoint**
+```bash
+# First, login and save the token
+TOKEN=$(curl -s -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"dispatcher","password":"password123"}' | jq -r '.token')
+
+# Then use the token to access protected endpoints
+curl -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/tasks
+```
+
+---
+
+## Docker Setup for Local Development
+
+### Prerequisites
+
+- Docker Desktop installed
+- Docker Compose installed (included with Docker Desktop)
+- Git installed
+
+### Quick Start
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/mzkhan-25/field-services-mk.git
+   cd field-services-mk
+   ```
+
+2. **Set up environment variables:**
+   ```bash
+   cp .env.example .env
+   ```
+   Edit `.env` file and update the variables as needed (optional for local development).
+
+3. **Start all services:**
+   ```bash
+   ./start-dev.sh up
+   ```
+   Or using Docker Compose directly:
+   ```bash
+   docker-compose up -d
+   ```
+
+4. **Access the application:**
+   - **Frontend:** http://localhost:5173
+   - **Backend API:** http://localhost:8080/api
+   - **Database:** localhost:5432
+
+### Available Commands
+
+The `start-dev.sh` script provides convenient commands for managing the development environment:
+
+```bash
+./start-dev.sh up       # Start all services
+./start-dev.sh down     # Stop all services
+./start-dev.sh restart  # Restart all services
+./start-dev.sh logs     # View logs from all services
+./start-dev.sh build    # Build all services
+./start-dev.sh clean    # Stop services and remove volumes (deletes data)
+./start-dev.sh status   # Show service status
+./start-dev.sh help     # Show help message
+```
+
+### Services
+
+#### PostgreSQL Database
+- **Port:** 5432
+- **Database:** field_services
+- **Username:** fsadmin
+- **Password:** fspassword (configurable in .env)
+- **Volume:** postgres_data (persistent storage)
+
+#### Spring Boot Backend
+- **Port:** 8080
+- **Context Path:** /api
+- **Health Check:** http://localhost:8080/api/actuator/health
+- **Dependencies:** PostgreSQL
+- **Features:**
+  - Spring Data JPA with Hibernate
+  - Spring Security with JWT authentication
+  - PostgreSQL database connection
+  - Actuator for health monitoring
+
+#### React Frontend (Vite)
+- **Port:** 5173
+- **Development Server:** Vite with HMR (Hot Module Replacement)
+- **Dependencies:** Backend API
+- **Features:**
+  - React 18
+  - Vite dev server
+  - Live reload on file changes
+
+### Health Checks
+
+All services include health checks that ensure proper startup:
+
+- **PostgreSQL:** Verifies database is accepting connections
+- **Backend:** Checks `/actuator/health` endpoint
+- **Frontend:** Verifies Vite dev server is running
+
+### Environment Variables
+
+Key environment variables (see `.env.example` for complete list):
+
+```bash
+# Database
+POSTGRES_DB=field_services
+POSTGRES_USER=fsadmin
+POSTGRES_PASSWORD=fspassword
+POSTGRES_PORT=5432
+
+# Backend
+BACKEND_PORT=8080
+JWT_SECRET=your-secret-key-change-in-production
+JWT_EXPIRATION=7200000
+
+# Frontend
+FRONTEND_PORT=5173
+VITE_API_URL=http://localhost:8080/api
+```
+
+### Troubleshooting
+
+**Services won't start:**
+```bash
+# Check service logs
+./start-dev.sh logs
+
+# Check service status
+./start-dev.sh status
+
+# Rebuild services
+./start-dev.sh build
+./start-dev.sh up
+```
+
+**Port conflicts:**
+- Edit `.env` file and change port numbers for conflicting services
+- Stop conflicting applications using the ports
+
+**Database connection issues:**
+- Ensure PostgreSQL health check passes: `docker-compose ps`
+- Check backend logs: `docker-compose logs backend`
+
+**Clean slate:**
+```bash
+# Stop services and remove all data
+./start-dev.sh clean
+
+# Start fresh
+./start-dev.sh up
+```
+
+### Development Workflow
+
+1. **Make code changes** in `backend/` or `frontend/` directories
+2. **Backend changes:** Rebuild the backend service
+   ```bash
+   docker-compose up -d --build backend
+   ```
+3. **Frontend changes:** Auto-reload with HMR (no rebuild needed)
+4. **Database changes:** Handled automatically by Hibernate DDL auto-update
+
+### Stopping the Application
+
+```bash
+# Stop all services
+./start-dev.sh down
+
+# Or using Docker Compose
+docker-compose down
+
+# Stop and remove volumes (deletes all data)
+./start-dev.sh clean
+```
