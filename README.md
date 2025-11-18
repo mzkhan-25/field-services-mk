@@ -180,6 +180,124 @@ Work on issue #45
 
 ---
 
+## API Documentation
+
+### Authentication Endpoints
+
+#### Login
+Authenticates a user and returns a JWT token.
+
+**Endpoint:** `POST /api/auth/login`
+
+**Request Body:**
+```json
+{
+  "username": "dispatcher",
+  "password": "password123"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "type": "Bearer",
+  "username": "dispatcher",
+  "email": "dispatcher@fieldservices.com",
+  "role": "DISPATCHER"
+}
+```
+
+**Response (401 Unauthorized):**
+```json
+{
+  "message": "Invalid username or password"
+}
+```
+
+#### Health Check
+Checks if the authentication service is running.
+
+**Endpoint:** `GET /api/auth/health`
+
+**Response (200 OK):**
+```json
+{
+  "status": "UP",
+  "service": "Auth Service"
+}
+```
+
+### Default Users
+
+The system initializes with three default users for testing:
+
+| Username   | Password    | Role       | Email                           |
+|------------|-------------|------------|---------------------------------|
+| dispatcher | password123 | DISPATCHER | dispatcher@fieldservices.com    |
+| technician | password123 | TECHNICIAN | technician@fieldservices.com    |
+| supervisor | password123 | SUPERVISOR | supervisor@fieldservices.com    |
+
+### Role-Based Access Control
+
+The system implements three roles with different permissions:
+
+#### DISPATCHER Role
+- Can create and assign tasks
+- Can view all tasks
+- Can access task creation endpoints: `POST /api/tasks/create`, `POST /api/tasks/assign`
+
+#### TECHNICIAN Role
+- Can view assigned tasks
+- Can update task status
+- Can access task status update endpoints: `PUT /api/tasks/*/status`
+
+#### SUPERVISOR Role
+- Read-only access to all data
+- Can view analytics and reports
+- Can access analytics endpoints: `GET /api/analytics/**`
+
+### Using JWT Tokens
+
+After logging in, include the JWT token in the Authorization header for authenticated requests:
+
+```bash
+curl -H "Authorization: Bearer YOUR_JWT_TOKEN" http://localhost:8080/api/tasks
+```
+
+### Session Management
+
+- JWT tokens expire after 2 hours (7200000 milliseconds)
+- Sessions are stateless and managed through JWT tokens
+- No server-side session storage is required
+
+### Testing the API
+
+**Example: Login as Dispatcher**
+```bash
+curl -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"dispatcher","password":"password123"}'
+```
+
+**Example: Check Health**
+```bash
+curl http://localhost:8080/api/auth/health
+```
+
+**Example: Access Protected Endpoint**
+```bash
+# First, login and save the token
+TOKEN=$(curl -s -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"dispatcher","password":"password123"}' | jq -r '.token')
+
+# Then use the token to access protected endpoints
+curl -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/tasks
+```
+
+---
+
 ## Docker Setup for Local Development
 
 ### Prerequisites
