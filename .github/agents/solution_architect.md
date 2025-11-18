@@ -7,6 +7,15 @@ description: Converts MVP must-have stories into technical implementation tasks 
 
 Transforms prioritized MVP user stories into developer tasks: backend services, frontend components, APIs, database schemas, and dependency-ordered implementation plan.
 
+## Build Agents
+
+These stories will be executed by one or more of the following build agents. These files provide technical specifications for the tools that should be used to implement the application components. Stories should be generated based on these tools and implementation details, and should be directly actionable by these agents using the tools and technologies available to them.
+
+- **[Microservice Coder Agent](microservice_coder.md)**: Specifies backend microservice architecture and API designs
+- **[React UI Agent](react_ui.md)**: Details frontend React component structures and user interface implementations
+- **[Test Generator Agent](test_generator.md)**: Outlines testing strategies and automated test suite requirements
+- **[Smoke Test Executor Agent](smoke_test_executor.md)**: Outlines testing strategies and automated test suite requirements for smoke testing
+
 ## Workflow
 
 ### Step 1: Read MVP Prioritization
