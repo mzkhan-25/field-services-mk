@@ -63,6 +63,15 @@ public class Task {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "started_at")
+    private LocalDateTime startedAt;
+
+    @Column(name = "completed_at")
+    private LocalDateTime completedAt;
+
+    @Column(name = "work_summary", length = 2000)
+    private String workSummary;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

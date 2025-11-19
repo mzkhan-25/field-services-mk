@@ -1,7 +1,11 @@
-# Task Management and Assignment API
+# Field Services Management Backend API
 
 ## Overview
-This document describes the REST API endpoints for Task Management and Task Assignment features implemented in the Field Services Management Backend.
+This document describes the REST API endpoints for the Field Services Management Backend, including:
+- Task Management
+- Task Assignment
+- Location Tracking
+- Task Status Management
 
 ## Base URL
 All endpoints are prefixed with `/api` (configured in `application.properties`)
@@ -507,6 +511,12 @@ Unit tests provide 85%+ coverage for all components:
 - **NotificationService: 96% line coverage**
 - **NotificationController: 100% line coverage**
 - **NotificationRepository: 100% line coverage**
+- LocationService: 100% instruction coverage, 92% branch coverage
+- LocationController: 100% line coverage
+- StatusService: 100% instruction and branch coverage
+- StatusController: 100% line coverage
+
+Total test count: 111 tests
 
 Run tests with:
 ```bash
@@ -525,9 +535,247 @@ open target/site/jacoco/index.html
 
 The following features are planned but not yet implemented:
 - Task reassignment functionality
-- Task status updates by technicians
-- Task completion workflow
 - Task history and audit trail
 - Production SMS integration (Twilio)
 - Customer portal for viewing notification history
 - Push notifications for mobile apps
+
+---
+
+## Location Tracking Endpoints
+
+### Update Technician Location
+Update the current location of a technician. Limited to one update per 30 seconds.
+
+**Endpoint:** `POST /api/locations`
+
+**Access:** TECHNICIAN
+
+**Request Body:**
+```json
+{
+  "userId": 5,
+  "latitude": 40.7128,
+  "longitude": -74.0060,
+  "accuracy": 10.5
+}
+```
+
+**Response:** `201 Created`
+```json
+{
+  "id": 1,
+  "userId": 5,
+  "latitude": 40.7128,
+  "longitude": -74.0060,
+  "accuracy": 10.5,
+  "timestamp": "2025-11-18T23:10:00"
+}
+```
+
+**Error Responses:**
+- `429 Too Many Requests` if location updated within last 30 seconds
+- `400 Bad Request` if user not found or not a technician
+
+**WebSocket:** Location updates are broadcast to `/topic/locations` in real-time
+
+---
+
+### Get All Technician Locations
+Retrieve latest locations for all active technicians (within last 5 minutes).
+
+**Endpoint:** `GET /api/locations/technicians`
+
+**Access:** All authenticated users
+
+**Response:** `200 OK`
+```json
+[
+  {
+    "id": 1,
+    "userId": 5,
+    "latitude": 40.7128,
+    "longitude": -74.0060,
+    "accuracy": 10.5,
+    "timestamp": "2025-11-18T23:10:00"
+  },
+  {
+    "id": 2,
+    "userId": 6,
+    "latitude": 40.7500,
+    "longitude": -73.9900,
+    "accuracy": 8.2,
+    "timestamp": "2025-11-18T23:09:30"
+  }
+]
+```
+
+---
+
+### Get All Task Locations
+Retrieve locations for all unassigned and in-progress tasks.
+
+**Endpoint:** `GET /api/locations/tasks`
+
+**Access:** All authenticated users
+
+**Response:** `200 OK`
+```json
+[
+  {
+    "taskId": 1,
+    "title": "Fix HVAC System",
+    "address": "123 Main Street, Springfield, IL 62701",
+    "status": "UNASSIGNED",
+    "priority": "HIGH",
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "taskId": 2,
+    "title": "Plumbing Repair",
+    "address": "456 Oak Avenue, Springfield, IL 62702",
+    "status": "IN_PROGRESS",
+    "priority": "MEDIUM",
+    "latitude": null,
+    "longitude": null
+  }
+]
+```
+
+**Note:** Geocoding for addresses is not yet implemented. Latitude/longitude fields are placeholders.
+
+---
+
+## Task Status Management Endpoints
+
+### Start Task
+Mark an assigned task as in progress.
+
+**Endpoint:** `PUT /api/tasks/{id}/start`
+
+**Access:** TECHNICIAN
+
+**Response:** `200 OK`
+```json
+{
+  "id": 1,
+  "title": "Fix HVAC System",
+  "status": "IN_PROGRESS",
+  "startedAt": "2025-11-18T23:15:00",
+  "assignedTechnicianId": 5,
+  "assignedTechnicianName": "john_tech",
+  ...
+}
+```
+
+**Business Rules:**
+- Only ASSIGNED tasks can be started
+- Task status automatically changes to "IN_PROGRESS"
+- Start timestamp is recorded
+
+**Error Responses:**
+- `404 Not Found` if task doesn't exist
+- `400 Bad Request` if task is not in ASSIGNED status
+
+---
+
+### Complete Task
+Mark an in-progress task as completed with work summary.
+
+**Endpoint:** `PUT /api/tasks/{id}/complete`
+
+**Access:** TECHNICIAN
+
+**Request Body:**
+```json
+{
+  "workSummary": "Replaced the faulty HVAC component and tested the system. All working correctly now. Customer satisfied with the repair."
+}
+```
+
+**Response:** `200 OK`
+```json
+{
+  "id": 1,
+  "title": "Fix HVAC System",
+  "status": "COMPLETED",
+  "startedAt": "2025-11-18T23:15:00",
+  "completedAt": "2025-11-18T23:45:00",
+  "workSummary": "Replaced the faulty HVAC component and tested the system. All working correctly now. Customer satisfied with the repair.",
+  "assignedTechnicianId": 5,
+  "assignedTechnicianName": "john_tech",
+  ...
+}
+```
+
+**Validations:**
+- `workSummary`: Required, 10-2000 characters
+
+**Business Rules:**
+- Only IN_PROGRESS tasks can be completed
+- Work summary is mandatory for completion
+- Task status automatically changes to "COMPLETED"
+- Completion timestamp is recorded
+
+**Error Responses:**
+- `404 Not Found` if task doesn't exist
+- `400 Bad Request` if task is not in IN_PROGRESS status or work summary is missing/invalid
+
+---
+
+### Get Task Status
+Retrieve current status of a task.
+
+**Endpoint:** `GET /api/tasks/{id}/status`
+
+**Access:** All authenticated users
+
+**Response:** `200 OK`
+```json
+{
+  "id": 1,
+  "title": "Fix HVAC System",
+  "status": "IN_PROGRESS",
+  "startedAt": "2025-11-18T23:15:00",
+  "completedAt": null,
+  "workSummary": null,
+  "assignedTechnicianId": 5,
+  "assignedTechnicianName": "john_tech",
+  ...
+}
+```
+
+**Error Response:** `404 Not Found` if task doesn't exist
+
+---
+
+## WebSocket Support
+
+### Connection Endpoint
+Connect to WebSocket for real-time updates.
+
+**Endpoint:** `ws://localhost:8080/ws`
+
+**Protocol:** STOMP over WebSocket with SockJS fallback
+
+### Topics
+
+#### Location Updates
+**Topic:** `/topic/locations`
+
+**Message Format:**
+```json
+{
+  "id": 1,
+  "userId": 5,
+  "latitude": 40.7128,
+  "longitude": -74.0060,
+  "accuracy": 10.5,
+  "timestamp": "2025-11-18T23:10:00"
+}
+```
+
+**Usage:** Subscribe to receive real-time location updates whenever a technician updates their location.
+
+---
