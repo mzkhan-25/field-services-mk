@@ -26,6 +26,7 @@ public class AssignmentService {
 
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     /**
      * Assign a task to a technician
@@ -73,8 +74,19 @@ public class AssignmentService {
         Task assignedTask = taskRepository.save(task);
         log.info("Task {} assigned successfully to technician {}", taskId, technician.getUsername());
 
-        // TODO: Trigger notification to technician and customer
-        log.info("TODO: Send notification to technician {} and customer", technician.getUsername());
+        // Trigger notification to customer
+        // Note: Using placeholder customer ID and email since customer management is not in scope
+        // In a real implementation, this would come from the Task entity or a Customer service
+        Long customerId = 1L; // Placeholder customer ID
+        String customerEmail = "customer@example.com"; // Placeholder customer email
+        
+        try {
+            notificationService.sendTaskAssignmentNotification(taskId, customerId, customerEmail);
+            log.info("Assignment notification triggered for task {} to customer {}", taskId, customerEmail);
+        } catch (Exception e) {
+            // Log but don't fail the assignment if notification fails
+            log.error("Failed to send assignment notification for task {}: {}", taskId, e.getMessage());
+        }
 
         return TaskResponse.fromEntity(assignedTask);
     }
