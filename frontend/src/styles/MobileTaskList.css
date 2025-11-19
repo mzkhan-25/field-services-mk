@@ -1,0 +1,118 @@
+.mobile-task-list-container {
+  max-width: 100%;
+  padding: 0;
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
+.mobile-task-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.mobile-task-list-header h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #333;
+}
+
+.mobile-refresh-button-icon {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px;
+  color: #4CAF50;
+}
+
+.mobile-refresh-button-icon:active {
+  transform: rotate(180deg);
+  transition: transform 0.3s;
+}
+
+.pull-refresh-indicator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f5f5f5;
+  transition: height 0.2s;
+  overflow: hidden;
+}
+
+.pull-refresh-text {
+  color: #666;
+  font-size: 14px;
+}
+
+.mobile-task-list-loading {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 16px;
+}
+
+.loading-spinner {
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #4CAF50;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.mobile-task-list-empty {
+  text-align: center;
+  padding: 40px 16px;
+  color: #666;
+}
+
+.mobile-task-list-error {
+  text-align: center;
+  padding: 40px 16px;
+}
+
+.error-message {
+  color: #F44336;
+  margin-bottom: 16px;
+}
+
+.mobile-refresh-button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 24px;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.mobile-refresh-button:active {
+  transform: scale(0.98);
+}
+
+.mobile-task-list-items {
+  padding: 8px;
+}
+
+/* Touch optimization */
+@media (hover: none) and (pointer: coarse) {
+  .mobile-refresh-button-icon {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}

@@ -1,0 +1,101 @@
+.map-view-container {
+  width: 100%;
+  height: 600px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.map-container {
+  width: 100%;
+  height: 100%;
+}
+
+/* Technician Popup Styles */
+.technician-popup {
+  padding: 8px;
+  min-width: 200px;
+}
+
+.technician-popup h3 {
+  margin: 0 0 8px 0;
+  color: #333;
+  font-size: 16px;
+}
+
+.technician-popup p {
+  margin: 4px 0;
+  color: #666;
+  font-size: 14px;
+}
+
+/* Task Popup Styles */
+.task-popup {
+  padding: 8px;
+  min-width: 250px;
+}
+
+.task-popup h3 {
+  margin: 0 0 8px 0;
+  color: #333;
+  font-size: 16px;
+}
+
+.task-popup p {
+  margin: 4px 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.task-popup .priority-high {
+  color: #F44336;
+  font-weight: bold;
+}
+
+.task-popup .priority-medium {
+  color: #FF9800;
+  font-weight: bold;
+}
+
+.task-popup .priority-low {
+  color: #2196F3;
+  font-weight: bold;
+}
+
+.task-popup .assign-button {
+  margin-top: 8px;
+  padding: 6px 12px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  width: 100%;
+}
+
+.task-popup .assign-button:hover {
+  background-color: #45a049;
+}
+
+.task-popup .assign-button:active {
+  transform: scale(0.98);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .map-view-container {
+    height: 400px;
+  }
+}
+
+@media (max-width: 480px) {
+  .map-view-container {
+    height: 300px;
+  }
+  
+  .technician-popup,
+  .task-popup {
+    min-width: 180px;
+  }
+}
