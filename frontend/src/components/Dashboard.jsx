@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import TaskForm from './TaskForm';
 import TaskList from './TaskList';
+import MapView from './map/MapView';
 import { getUnassignedTasks, createTask } from '../api/taskAPI';
 import '../styles/Dashboard.css';
 
@@ -12,6 +13,7 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [notification, setNotification] = useState(null);
+  const [viewMode, setViewMode] = useState('list'); // 'list' or 'map'
 
   const formatTimeRemaining = (ms) => {
     const minutes = Math.floor(ms / 60000);
@@ -115,14 +117,38 @@ const Dashboard = () => {
                 >
                   Create New Task
                 </button>
+                <div className="view-toggle">
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={`view-toggle-button ${viewMode === 'list' ? 'active' : ''}`}
+                  >
+                    List View
+                  </button>
+                  <button
+                    onClick={() => setViewMode('map')}
+                    className={`view-toggle-button ${viewMode === 'map' ? 'active' : ''}`}
+                  >
+                    Map View
+                  </button>
+                </div>
               </div>
             )}
-            <TaskList
-              tasks={tasks}
-              onRefresh={loadTasks}
-              isLoading={isLoading}
-              error={error}
-            />
+            {viewMode === 'list' ? (
+              <TaskList
+                tasks={tasks}
+                onRefresh={loadTasks}
+                isLoading={isLoading}
+                error={error}
+              />
+            ) : (
+              <MapView
+                tasks={tasks.map(task => ({
+                  ...task,
+                  location: task.location || { lat: 37.7749 + Math.random() * 0.1, lng: -122.4194 + Math.random() * 0.1 }
+                }))}
+                technicians={[]}
+              />
+            )}
           </>
         )}
       </main>
