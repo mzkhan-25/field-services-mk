@@ -258,7 +258,181 @@ Retrieve list of available technicians.
 
 ---
 
+## Notification Endpoints
+
+### Send Notification
+Send a notification to a customer (internal use or manual triggering).
+
+**Endpoint:** `POST /api/notifications/send`
+
+**Access:** DISPATCHER, SUPERVISOR
+
+**Request Body:**
+```json
+{
+  "taskId": 1,
+  "customerId": 100,
+  "type": "TASK_ASSIGNED",
+  "message": "Your task has been assigned to a technician",
+  "channel": "EMAIL",
+  "recipientContact": "customer@example.com"
+}
+```
+
+**Response:** `201 Created`
+```json
+{
+  "id": 1,
+  "taskId": 1,
+  "customerId": 100,
+  "type": "TASK_ASSIGNED",
+  "message": "Your task has been assigned to a technician",
+  "channel": "EMAIL",
+  "recipientContact": "customer@example.com",
+  "deliveryStatus": "SENT",
+  "sentAt": "2025-11-18T23:10:00",
+  "retryCount": 0,
+  "errorMessage": null,
+  "createdAt": "2025-11-18T23:10:00",
+  "updatedAt": "2025-11-18T23:10:00"
+}
+```
+
+**Validations:**
+- `taskId`: Required
+- `customerId`: Required
+- `type`: Required, one of: TASK_ASSIGNED, TASK_IN_PROGRESS, TASK_COMPLETED, TASK_CANCELLED
+- `message`: Required
+- `channel`: Optional, defaults to EMAIL. Values: EMAIL, SMS, BOTH
+- `recipientContact`: Optional, recipient's email or phone number
+
+---
+
+### Get Notifications for Task
+Retrieve all notifications sent for a specific task.
+
+**Endpoint:** `GET /api/notifications/{taskId}`
+
+**Access:** All authenticated users
+
+**Response:** `200 OK`
+```json
+[
+  {
+    "id": 1,
+    "taskId": 1,
+    "customerId": 100,
+    "type": "TASK_ASSIGNED",
+    "message": "Task Assignment Notification...",
+    "channel": "EMAIL",
+    "recipientContact": "customer@example.com",
+    "deliveryStatus": "SENT",
+    "sentAt": "2025-11-18T23:10:00",
+    "retryCount": 0,
+    "createdAt": "2025-11-18T23:10:00",
+    "updatedAt": "2025-11-18T23:10:00"
+  },
+  {
+    "id": 2,
+    "taskId": 1,
+    "customerId": 100,
+    "type": "TASK_IN_PROGRESS",
+    "message": "Task In Progress Notification...",
+    "channel": "EMAIL",
+    "recipientContact": "customer@example.com",
+    "deliveryStatus": "SENT",
+    "sentAt": "2025-11-18T23:15:00",
+    "retryCount": 0,
+    "createdAt": "2025-11-18T23:15:00",
+    "updatedAt": "2025-11-18T23:15:00"
+  }
+]
+```
+
+---
+
+### Retry Failed Notifications
+Retry sending all failed notifications (up to 3 retries).
+
+**Endpoint:** `POST /api/notifications/retry`
+
+**Access:** SUPERVISOR
+
+**Response:** `200 OK`
+
+**Business Rules:**
+- Only notifications with status "FAILED" are retried
+- Maximum of 3 retry attempts per notification
+- Notifications exceeding max retries are logged but not retried
+
+---
+
+## Notification Features
+
+### Automatic Notifications
+The system automatically sends notifications when:
+- **Task Assignment**: When a task is assigned to a technician, a notification is sent to the customer with:
+  - Task details (title, description, address, priority)
+  - Assigned technician information
+  - Estimated time of arrival (ETA)
+  - Estimated duration
+
+- **Task In Progress**: When task status changes to IN_PROGRESS (future implementation)
+
+### Notification Templates
+Pre-built templates include:
+- Task assignment details with technician info and ETA
+- Task in-progress status with updated ETA
+- Customizable message content
+
+### Email Notifications
+- Uses Spring Mail for email delivery
+- Configurable SMTP settings
+- Includes task details and technician information
+- Formatted with clear subject lines
+
+### SMS Notifications
+- Mock implementation (ready for Twilio integration)
+- Can be configured for production SMS service
+- Supports same message content as email
+
+### Async Processing
+- Notifications are sent asynchronously using `@Async`
+- Does not block task assignment operations
+- Failures in notification sending do not affect task operations
+
+### Delivery Status Tracking
+- Tracks delivery status: PENDING, SENT, DELIVERED, FAILED
+- Records sent timestamp
+- Captures error messages for failed deliveries
+- Maintains retry count
+
+### ETA Calculation
+- Automatically calculates estimated time of arrival
+- Includes 30-minute travel time
+- Adds task estimated duration
+- Formatted in human-readable date/time
+
+---
+
 ## Data Models
+
+### NotificationType Enum
+- `TASK_ASSIGNED`
+- `TASK_IN_PROGRESS`
+- `TASK_COMPLETED`
+- `TASK_CANCELLED`
+
+### DeliveryStatus Enum
+- `PENDING`
+- `SENT`
+- `DELIVERED`
+- `FAILED`
+
+### NotificationChannel Enum
+- `EMAIL`
+- `SMS`
+- `BOTH`
 
 ### Priority Enum
 - `HIGH`
@@ -334,6 +508,9 @@ Unit tests provide 85%+ coverage for all components:
 - TaskController: 100% line coverage
 - AssignmentService: 100% line coverage
 - AssignmentController: 100% line coverage
+- **NotificationService: 96% line coverage**
+- **NotificationController: 100% line coverage**
+- **NotificationRepository: 100% line coverage**
 - LocationService: 100% instruction coverage, 92% branch coverage
 - LocationController: 100% line coverage
 - StatusService: 100% instruction and branch coverage
@@ -357,9 +534,11 @@ open target/site/jacoco/index.html
 ## Future Enhancements
 
 The following features are planned but not yet implemented:
-- Notification system for technician and customer when task is assigned (currently has TODO placeholder)
 - Task reassignment functionality
 - Task history and audit trail
+- Production SMS integration (Twilio)
+- Customer portal for viewing notification history
+- Push notifications for mobile apps
 
 ---
 
