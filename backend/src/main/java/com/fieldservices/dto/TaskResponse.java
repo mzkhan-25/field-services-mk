@@ -28,6 +28,9 @@ public class TaskResponse {
     private String assignedByName;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private LocalDateTime startedAt;
+    private LocalDateTime completedAt;
+    private String workSummary;
 
     public static TaskResponse fromEntity(Task task) {
         TaskResponseBuilder builder = TaskResponse.builder()
@@ -40,7 +43,10 @@ public class TaskResponse {
                 .status(task.getStatus())
                 .assignedAt(task.getAssignedAt())
                 .createdAt(task.getCreatedAt())
-                .updatedAt(task.getUpdatedAt());
+                .updatedAt(task.getUpdatedAt())
+                .startedAt(task.getStartedAt())
+                .completedAt(task.getCompletedAt())
+                .workSummary(task.getWorkSummary());
 
         if (task.getAssignedTechnician() != null) {
             builder.assignedTechnicianId(task.getAssignedTechnician().getId())
