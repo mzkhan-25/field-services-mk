@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mock Dashboard</title>
+  <style>
+    body { margin: 0; font-family: system-ui; background: #f5f5f5; }
+    .dashboard-container { min-height: 100vh; }
+    .dashboard-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .dashboard-main { padding: 40px; max-width: 1400px; margin: 0 auto; }
+    .dashboard-actions { margin-bottom: 2rem; }
+    .create-task-button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .task-list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    .task-list-controls { display: flex; gap: 1rem; }
+    .priority-filter { padding: 0.5rem 1rem; border-radius: 4px; }
+    .task-list-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 1.5rem;
+    }
+    .task-card {
+      background: white;
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      border-left: 4px solid;
+    }
+    .task-card.priority-high { border-left-color: #dc3545; }
+    .task-card.priority-medium { border-left-color: #ffc107; }
+    .task-card.priority-low { border-left-color: #28a745; }
+    .task-card-header { display: flex; justify-content: space-between; margin-bottom: 1rem; }
+    .task-title { font-size: 1.25rem; font-weight: 600; margin: 0; }
+    .priority-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+    .priority-badge.priority-high { background-color: #dc3545; color: white; }
+    .priority-badge.priority-medium { background-color: #ffc107; color: #333; }
+    .priority-badge.priority-low { background-color: #28a745; color: white; }
+    .task-description { color: #666; margin-bottom: 0.5rem; }
+    .task-info { display: flex; flex-direction: column; gap: 0.5rem; }
+    .info-item { display: flex; gap: 0.5rem; }
+    .info-label { font-weight: 600; color: #555; min-width: 80px; }
+    .info-value { color: #666; }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <header class="dashboard-header">
+      <h1>Field Services Management System</h1>
+      <div>
+        <span style="margin-right: 20px;">Welcome, dispatcher1</span>
+        <span style="margin-right: 20px;">Role: DISPATCHER</span>
+      </div>
+    </header>
+    <main class="dashboard-main">
+      <div class="dashboard-actions">
+        <button class="create-task-button">Create New Task</button>
+      </div>
+      <div class="task-list-container">
+        <div class="task-list-header">
+          <h2>Unassigned Tasks</h2>
+          <div class="task-list-controls">
+            <label>Filter by Priority:
+              <select class="priority-filter">
+                <option>All Priorities</option>
+                <option>High</option>
+                <option>Medium</option>
+                <option>Low</option>
+              </select>
+            </label>
+          </div>
+        </div>
+        <div class="task-list-grid">
+          <div class="task-card priority-high">
+            <div class="task-card-header">
+              <h3 class="task-title">Fix HVAC System</h3>
+              <span class="priority-badge priority-high">HIGH</span>
+            </div>
+            <p class="task-description">Customer reports AC not working</p>
+            <div class="task-info">
+              <div class="info-item">
+                <span class="info-label">Address:</span>
+                <span class="info-value">123 Main Street, Springfield, IL</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Duration:</span>
+                <span class="info-value">120 min</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Status:</span>
+                <span class="info-value">UNASSIGNED</span>
+              </div>
+            </div>
+          </div>
+          <div class="task-card priority-medium">
+            <div class="task-card-header">
+              <h3 class="task-title">Plumbing Repair</h3>
+              <span class="priority-badge priority-medium">MEDIUM</span>
+            </div>
+            <p class="task-description">Leaking pipe in bathroom</p>
+            <div class="task-info">
+              <div class="info-item">
+                <span class="info-label">Address:</span>
+                <span class="info-value">456 Oak Avenue, Springfield, IL</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Duration:</span>
+                <span class="info-value">90 min</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Status:</span>
+                <span class="info-value">UNASSIGNED</span>
+              </div>
+            </div>
+          </div>
+          <div class="task-card priority-low">
+            <div class="task-card-header">
+              <h3 class="task-title">Routine Maintenance</h3>
+              <span class="priority-badge priority-low">LOW</span>
+            </div>
+            <p class="task-description">Annual inspection and maintenance</p>
+            <div class="task-info">
+              <div class="info-item">
+                <span class="info-label">Address:</span>
+                <span class="info-value">789 Pine Road, Springfield, IL</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Duration:</span>
+                <span class="info-value">60 min</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Status:</span>
+                <span class="info-value">UNASSIGNED</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
